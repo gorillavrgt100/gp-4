@@ -19,6 +19,7 @@ bool g_firstMouse = true;
 POINT g_center{};
 float g_x = 0.0f, g_z = 5.0f, g_yaw = 0.0f, g_pitch = 0.0f;
 float g_playerY = 0.0f, g_verticalVelocity = 0.0f;
+float g_walkTime = 0.0f;
 bool g_grounded = true;
 LARGE_INTEGER g_frequency{}, g_previous{};
 
@@ -63,7 +64,9 @@ void tree(float x,float z,float s) {
 }
 
 void drawPlayerHands() {
+    const float handBob = std::sin(g_walkTime * 10.0f) * 0.035f;
     glPushMatrix();
+    glTranslatef(0.0f, handBob, 0.0f);
     glLoadIdentity();
     glDisable(GL_FOG);
     // Forearms and broad hands sit in the lower corners of the view.
@@ -109,6 +112,18 @@ void renderScene() {
     }
     tree(-12,-9,1);tree(13,-12,1.2f);tree(-17,10,1.15f);
     tree(18,9,1);tree(8,18,.9f);tree(-8,19,1);
+    // A worn trail of dark stone slabs leads through the clearing.
+    for(int i=0;i<9;i++) {
+        const float z=-4.0f-float(i)*3.0f;
+        cube(0.0f,.035f,z,2.2f,.07f,1.35f,.075f,.078f,.075f);
+        cube(-1.45f,.025f,z-.7f,.42f,.05f,.48f,.045f,.05f,.048f);
+        cube(1.5f,.025f,z+.65f,.5f,.05f,.55f,.05f,.055f,.052f);
+    }
+    // Scattered rocks break up the flat forest floor.
+    ellipsoid(-5,.28f,-5,.8f,.32f,.55f,.055f,.06f,.058f);
+    ellipsoid(6,.22f,-13,.65f,.25f,.8f,.06f,.065f,.06f);
+    ellipsoid(-10,.2f,8,.55f,.22f,.48f,.05f,.055f,.052f);
+    ellipsoid(11,.3f,5,.85f,.34f,.6f,.055f,.06f,.057f);
     // A distant, simple abandoned structure gives the clearing a landmark.
     cube(0,1.65f,-30,8,3.3f,1,.035f,.04f,.043f);
     cube(0,3.35f,-30,9,.22f,1.2f,.018f,.022f,.024f);
@@ -122,7 +137,8 @@ void update(float dt) {
     if(g_keys['W'])f++; if(g_keys['S'])f--;
     if(g_keys['D'])s++; if(g_keys['A'])s--;
     const float len=std::sqrt(f*f+s*s);
-    if(len>0){f/=len;s/=len;}
+    if(len>0){f/=len;s/=len; g_walkTime += dt * (g_keys[VK_SHIFT] ? 1.45f : 1.0f);}
+    else g_walkTime *= std::max(0.0f, 1.0f - dt * 5.0f);
     g_x+=(std::sin(yaw)*f+std::cos(yaw)*s)*speed;
     g_z+=(-std::cos(yaw)*f+std::sin(yaw)*s)*speed;
     g_x=std::clamp(g_x,-42.0f,42.0f);
