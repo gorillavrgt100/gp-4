@@ -17,7 +17,7 @@ bool g_keys[256]{};
 bool g_mouseCaptured = false;
 bool g_firstMouse = true;
 POINT g_center{};
-float g_x = 0.0f, g_z = 5.0f, g_yaw = 0.0f, g_pitch = 0.0f;
+float g_x = 0.0f, g_z = 5.0f, g_yaw = 0.0f, g_pitch = 0.0f;\nfloat g_playerY = 0.0f, g_verticalVelocity = 0.0f;\nbool g_grounded = true;
 LARGE_INTEGER g_frequency{}, g_previous{};
 
 void perspective(float fov, float aspect, float nearPlane, float farPlane) {
@@ -45,10 +45,10 @@ void renderScene() {
     RECT rc; GetClientRect(g_window,&rc);
     const int w=std::max(1L,rc.right-rc.left),h=std::max(1L,rc.bottom-rc.top);
     glViewport(0,0,w,h); glClearColor(.012f,.018f,.022f,1);
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); glEnable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); glEnable(GL_DEPTH_TEST);\n    // Low-visibility horror fog fades distant scenery into the darkness.\n    const GLfloat fogColor[4] = {.012f,.018f,.022f,1.0f};\n    glEnable(GL_FOG); glFogi(GL_FOG_MODE,GL_EXP2); glFogfv(GL_FOG_COLOR,fogColor);\n    glFogf(GL_FOG_DENSITY,.022f); glHint(GL_FOG_HINT,GL_NICEST);
     glMatrixMode(GL_PROJECTION);glLoadIdentity();perspective(72,float(w)/float(h),.08f,180);
     glMatrixMode(GL_MODELVIEW);glLoadIdentity();
-    glRotatef(-g_pitch,1,0,0);glRotatef(-g_yaw,0,1,0);glTranslatef(-g_x,-1.65f,-g_z);
+    glRotatef(-g_pitch,1,0,0);glRotatef(-g_yaw,0,1,0);glTranslatef(-g_x,-(1.65f+g_playerY),-g_z);
     glColor3f(.055f,.065f,.065f);glBegin(GL_QUADS);
     glVertex3f(-70,0,-70);glVertex3f(70,0,-70);glVertex3f(70,0,70);glVertex3f(-70,0,70);glEnd();
     for(int i=-8;i<=8;i++){tree(float(i)*5.5f,-25,1.15f);tree(float(i)*5.5f,25,1.15f);
@@ -76,7 +76,7 @@ void releaseMouse(){if(g_mouseCaptured){g_mouseCaptured=false;ShowCursor(TRUE);C
 LRESULT CALLBACK windowProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
     switch(msg){
     case WM_LBUTTONDOWN:captureMouse();return 0;
-    case WM_KEYDOWN:if(wp<256)g_keys[wp]=true;if(wp==VK_ESCAPE)releaseMouse();return 0;
+    case WM_KEYDOWN:if(wp<256 && !g_keys[wp])g_keys[wp]=true;if(wp==VK_ESCAPE)releaseMouse();return 0;
     case WM_KEYUP:if(wp<256)g_keys[wp]=false;return 0;
     case WM_MOUSEMOVE:if(g_mouseCaptured){POINT p{GET_X_LPARAM(lp),GET_Y_LPARAM(lp)};ClientToScreen(hwnd,&p);
         if(g_firstMouse){g_firstMouse=false;g_center=p;}else{g_yaw+=(p.x-g_center.x)*.12f;
