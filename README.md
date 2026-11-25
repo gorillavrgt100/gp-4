@@ -6,9 +6,9 @@ This repository is being used to build a keyboard-and-mouse Windows recreation/p
 
 - Native Windows desktop window (Win32 API)
 - Basic first-person camera
-- WASD movement and Shift sprint
+- WASD movement, Shift sprint, and Space to jump
 - Click the game window to capture the mouse; press Esc to release it
-- Procedural placeholder forest environment rendered with the Windows OpenGL API
+- Procedural placeholder forest environment rendered with the Windows OpenGL API\n- Atmospheric distance fog and basic jump/gravity physics
 - This is an early prototype, **not yet a complete GP 4 port**. The APK is an Android Unity IL2CPP build and does not include the original editable Windows project or a ready-made EXE.
 
 ## Build
