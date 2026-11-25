@@ -1,0 +1,41 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Compile native Windows game
+    runs-on: windows-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Check for Windows game source
+        shell: pwsh
+        run: |
+          if (!(Test-Path "CMakeLists.txt")) {
+            Write-Error "No CMakeLists.txt found. Add the native C++ Windows game source and its CMakeLists.txt before this workflow can produce an EXE. An Android APK cannot be converted into a native EXE by this workflow."
+          }
+
+      - name: Configure CMake
+        run: cmake -S . -B build -A x64
+
+      - name: Build Release EXE
+        run: cmake --build build --config Release
+
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: GP-4-Windows-EXE
+          path: build/**/*.exe
+          if-no-files-found: error
+          retention-days: 14
